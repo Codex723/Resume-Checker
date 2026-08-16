@@ -35,7 +35,7 @@ export function ModernTemplate({ profile }: TemplateProps) {
                 <div key={entry.id}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                     <h3 className="text-base font-semibold text-neutral-900">
-                      {entry.role} <span className="font-normal text-neutral-500">— {entry.company}</span>
+                      {entry.role} <span className="font-normal text-neutral-500"> {entry.company}</span>
                     </h3>
                     <span className="text-xs text-neutral-500">{entry.dates}</span>
                   </div>
@@ -59,7 +59,7 @@ export function ModernTemplate({ profile }: TemplateProps) {
               {profile.education.map((entry) => (
                 <div key={entry.id} className="flex flex-wrap items-baseline justify-between gap-x-4">
                   <h3 className="text-sm font-semibold text-neutral-900">
-                    {entry.degree} <span className="font-normal text-neutral-500">— {entry.school}</span>
+                    {entry.degree} <span className="font-normal text-neutral-500"> {entry.school}</span>
                   </h3>
                   <span className="text-xs text-neutral-500">{entry.dates}</span>
                 </div>

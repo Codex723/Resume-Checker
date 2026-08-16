@@ -11,14 +11,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const MODEL = "gemini-3.5-flash";
 // Search grounding has a much smaller free-tier quota than plain
-// generation and was the main cause of 429s. Off by default — one
+// generation and was the main cause of 429s. Off by default  one
 // Gemini call per analysis instead of two. Set to "true" in .env once
 // you have enough quota headroom to want live-search-backed insights.
 const GROUNDED_RESEARCH = process.env.GROUNDED_RESEARCH === "true";
 
 if (!process.env.GEMINI_API_KEY) {
   console.warn(
-    "[server] GEMINI_API_KEY is not set. Add it to your .env file — see .env.example."
+    "[server] GEMINI_API_KEY is not set. Add it to your .env file  see .env.example."
   );
 }
 
@@ -170,7 +170,7 @@ const ANALYSIS_SCHEMA = {
 
 // Retries a Gemini call on transient 429s with exponential backoff.
 // Free-tier per-minute limits are easy to hit with normal usage but
-// usually clear within a few seconds — daily quota exhaustion (the
+// usually clear within a few seconds  daily quota exhaustion (the
 // bigger 429 cause) won't be helped by this and will still surface
 // after the retries are exhausted.
 async function withRetry(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
@@ -190,12 +190,12 @@ async function withRetry(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
   throw lastErr;
 }
 
-// Step 1 (optional, off by default — see GROUNDED_RESEARCH): research
+// Step 1 (optional, off by default  see GROUNDED_RESEARCH): research
 // what a strong resume looks like for this person's profession using
 // live Google Search grounding rather than the model's static training
 // data. Search grounding has a much smaller free-tier quota than plain
 // generation, so this is skipped unless explicitly enabled, and fails
-// soft even when enabled — the resume still gets scored either way.
+// soft even when enabled  the resume still gets scored either way.
 async function researchProfession(resumeText) {
   if (!GROUNDED_RESEARCH) {
     return { research: "", sources: [] };
@@ -236,7 +236,7 @@ async function analyzeWithResearch(resumeText, research) {
   const response = await withRetry(() =>
     ai.models.generateContent({
       model: MODEL,
-      contents: `Resume text:\n\n${resumeText.slice(0, 15000)}\n\n${researchBlock}score this resume honestly, give profession-specific improvement advice, and extract its content into structured fields. Base every field on what's actually in the resume — do not invent achievements, employers, or dates. For the profile fields, if something genuinely isn't in the resume, use an empty string or empty array rather than guessing.`,
+      contents: `Resume text:\n\n${resumeText.slice(0, 15000)}\n\n${researchBlock}score this resume honestly, give profession-specific improvement advice, and extract its content into structured fields. Base every field on what's actually in the resume  do not invent achievements, employers, or dates. For the profile fields, if something genuinely isn't in the resume, use an empty string or empty array rather than guessing.`,
       config: {
         systemInstruction:
           "You are an expert resume reviewer and ATS specialist who tailors feedback to the person's specific profession.",
@@ -311,7 +311,7 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
 });
 
 // Rewrites a resume profile to be stronger, using the analysis suggestions
-// as guidance. Facts (employers, dates, degrees) are preserved — only
+// as guidance. Facts (employers, dates, degrees) are preserved  only
 // phrasing, framing, and impact are improved.
 app.post("/api/enhance-resume", async (req, res) => {
   try {
@@ -329,7 +329,7 @@ app.post("/api/enhance-resume", async (req, res) => {
     const response = await withRetry(() =>
       ai.models.generateContent({
         model: MODEL,
-        contents: `Target profession: ${profession || "unspecified"}\n\nImprovement suggestions to apply:\n${(suggestions || []).map((s) => `- ${s}`).join("\n")}\n\nCurrent resume content (JSON):\n${JSON.stringify(profile, null, 2)}\n\nRewrite this into a stronger version. Use punchier, achievement-focused bullets with strong action verbs. Add quantification only where it's plausible from context — never invent specific numbers that aren't implied by the original text. Never change employers, job titles, companies, schools, or dates. Keep the summary to 2-4 sentences.`,
+        contents: `Target profession: ${profession || "unspecified"}\n\nImprovement suggestions to apply:\n${(suggestions || []).map((s) => `- ${s}`).join("\n")}\n\nCurrent resume content (JSON):\n${JSON.stringify(profile, null, 2)}\n\nRewrite this into a stronger version. Use punchier, achievement-focused bullets with strong action verbs. Add quantification only where it's plausible from context  never invent specific numbers that aren't implied by the original text. Never change employers, job titles, companies, schools, or dates. Keep the summary to 2-4 sentences.`,
         config: {
           systemInstruction:
             "You are an expert resume writer. You improve phrasing and impact without fabricating facts.",
