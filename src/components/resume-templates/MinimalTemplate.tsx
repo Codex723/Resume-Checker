@@ -42,7 +42,7 @@ export function MinimalTemplate({ profile }: TemplateProps) {
                   <ul className="mt-2 space-y-1.5">
                     {entry.bullets.map((bullet, i) => (
                       <li key={i} className="flex text-sm leading-relaxed text-neutral-700">
-                        <span className="mr-2 text-neutral-300"></span>
+                        <span className="mr-2 text-neutral-300">—</span>
                         {bullet}
                       </li>
                     ))}

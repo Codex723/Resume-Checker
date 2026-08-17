@@ -168,6 +168,8 @@ const Index = () => {
                   initialProfile={currentAnalysis.profile}
                   profession={currentAnalysis.profession}
                   suggestions={currentAnalysis.formatSuggestions.map((s) => s.description)}
+                  professionInsights={currentAnalysis.professionInsights}
+                  beforeScore={{ atsScore: currentAnalysis.atsScore, overallScore: currentAnalysis.overallScore }}
                 />
               </div>
             </motion.div>

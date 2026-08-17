@@ -68,7 +68,26 @@ export interface EducationEntry {
   dates: string;
 }
 
-export type TemplateId = 'modern' | 'classic' | 'minimal';
+export interface ScoreSnapshot {
+  atsScore: number;
+  overallScore: number;
+}
+
+export interface EnhanceResult {
+  profile: ResumeProfile;
+  afterScore: ScoreSnapshot;
+  changesSummary: string[];
+}
+
+export type TemplateId =
+  | 'modern'
+  | 'classic'
+  | 'minimal'
+  | 'executive'
+  | 'creative'
+  | 'technical'
+  | 'compact'
+  | 'academic';
 
 export type SortOption = 'date' | 'atsScore' | 'name';
 export type FilterCategory = 'all' | 'technical' | 'soft' | 'industry' | 'tools';

@@ -1,41 +1,71 @@
 # ResumeAI
 
-ResumeAI is an AI-powered resume analysis tool that gives job seekers honest, profession-specific feedback on their resume  the kind of critique you'd normally have to pay a career coach for. Upload a PDF or DOCX, and within seconds you get a full breakdown of how the resume actually reads: an ATS compatibility score, an overall quality score, which skills are present versus missing, section-by-section feedback, and concrete advice tailored to the person's specific profession rather than generic "use action verbs" tips.
+Upload a resume (PDF or DOCX), get back an ATS score, an overall score,
+detected/missing skills, section feedback, and profession-specific advice
+researched via live search. From there, pick from 8 resume templates, have
+AI rewrite weak sections (with a before/after score so you can see whether
+it actually helped), and download the result as a PDF.
 
-## The problem it solves
+Frontend is Vite + React + TypeScript + Tailwind + shadcn-ui. The analysis
+itself runs on a small Express server that extracts the resume text and
+sends it to Gemini.
 
-Most resume tools either run a shallow keyword match against a job description, or give the same boilerplate advice to everyone regardless of field. ResumeAI is built around a different idea: the model first figures out what profession the resume is actually targeting, then evaluates the resume against what *that* profession's hiring bar looks like  so a software engineer's resume and a nurse's resume aren't judged by the same yardstick.
+No tool — this one included — can guarantee a resume gets someone hired;
+too much of that depends on the job market, the specific employer, and the
+interview. What this does is remove the common, fixable reasons a resume
+gets passed over: weak ATS formatting, generic phrasing, and missing
+profession-specific keywords and structure.
 
-## How it works
+## Setup
 
-1. **Parsing**  the uploaded PDF or DOCX is parsed server-side to extract raw resume text.
-2. **Profession research (optional)**  the resume can be paired with a live Google Search grounding step that pulls current expectations for that specific role: typical structure, in-demand keywords, and common mistakes for that field, rather than relying purely on the model's static training data.
-3. **Scoring and extraction**  a single structured Gemini call scores the resume (ATS score, overall score, keyword density), evaluates each section, flags formatting issues, identifies present and missing skills, and extracts the resume's content into a clean structured profile (contact info, experience, education, skills)  all grounded strictly in what's actually written, with no invented achievements or dates.
-4. **Rewriting**  once the analysis is in, the person can ask the AI to rewrite weak summaries or bullet points, with facts like employers, titles, and dates preserved and only the phrasing and impact improved.
-5. **Templating and export**  the extracted profile can be dropped into one of several resume templates and exported as a polished, ready-to-send PDF.
+```sh
+npm install
+cp .env.example .env
+```
 
-## What you get back
+Put a real key in `.env`:
 
-- **ATS score**  how well the resume would likely parse and score in an applicant tracking system
-- **Overall score**  general resume quality
-- **Keyword density**  how saturated the resume is with role-relevant terms
-- **Skill breakdown**  detected skills categorized as technical, soft, tools, or industry, each rated by how strongly they're demonstrated
-- **Missing skills**  valuable skills for the target profession that the resume doesn't currently show
-- **Section feedback**  a score and specific critique for each section of the resume
-- **Format suggestions**  errors, warnings, and tips flagged by severity
-- **Profession insights**  actionable advice specific to the detected role, with source links when live research is enabled
+```
+GEMINI_API_KEY=AIza...
+```
 
-There's no fake/demo data path  if the backend or API key isn't available, the app surfaces a clear error instead of pretending to analyze anything.
+Get one free, no card required, from https://aistudio.google.com/app/apikey.
 
-## Design choices worth knowing
+Each analysis researches the person's specific profession via live Google
+Search before scoring, so advice reflects current hiring norms rather than
+generic template advice. This uses a smaller free-tier quota than plain
+analysis, and it's the most likely source of a `429` error. If that
+happens: it's Google's real rate limit, not a bug — wait a bit and retry,
+check usage at https://ai.dev/rate-limit, or set `GROUNDED_RESEARCH=false`
+in `.env` to fall back to ungrounded (still real, just not live-searched)
+analysis.
 
-- **Structured output, not free text.** The analysis is returned as schema-validated JSON, so the frontend always gets predictable fields instead of parsing prose.
-- **Grounding is opt-in.** Live search grounding produces more current, source-backed advice, but burns through API quota much faster than a plain generation call  so by default the analysis runs on a single Gemini call, and grounding is something you turn on deliberately.
-- **Facts are preserved during rewriting.** The AI enhancement step is explicitly constrained to improve wording and framing, not to fabricate experience.
+## Running it
 
-## Tech stack
+```sh
+npm run dev:full
+```
 
-- **Frontend:** Vite, React, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
-- **Backend:** Express (Node.js)
-- **AI:** Google Gemini API, with optional Google Search grounding
-- **Document handling:** `pdf-parse` and `mammoth` for extraction, `jsPDF` + `html2canvas` for export
+That starts the API on `:3001` and the frontend on `:8080` together. Vite
+proxies `/api/*` to the backend, so the frontend just hits `/api/analyze`.
+
+Backend not running, or no key set? The app shows a clear error with a
+retry button — there's no demo/fake data fallback, since the whole point
+is a real analysis.
+
+## Layout
+
+```
+src/        frontend
+  components/resume-templates/   the downloadable resume templates
+server/     express api
+  POST /api/analyze          upload + score + extract profile
+  POST /api/enhance-resume   AI rewrite of summary/bullets
+```
+
+## Deploying
+
+Frontend is static — build with `npm run build`, host `dist/` anywhere.
+Backend needs a Node host (Render, Railway, Fly, etc.) with
+`GEMINI_API_KEY` and `CLIENT_ORIGIN` set. If they end up on different
+domains, set `VITE_API_URL` on the frontend build to point at the backend.
